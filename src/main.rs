@@ -2,8 +2,8 @@ mod extraction;
 mod insertion;
 mod binary_helper;
 
-use std::fs::File;
-use std::io::Write;
+use std::fs::{read_dir, File};
+use std::io::{Read, Write};
 use std::{env, fs, io};
 use std::path::Path;
 
@@ -33,14 +33,22 @@ fn main() -> io::Result<()> {
             fs::create_dir_all(&dir_path).expect("Failed to create directory");
 
             for entry in entries {
-                let output_path = dir_path.join(format!("{}_{}.bin", filename_no_ext, format!("{:08}", entry.offset)));
+                let output_path = dir_path.join(format!("{}_{}.{}", filename_no_ext, format!("{:08}", entry.offset), &entry.format));
                 let mut output_file = File::create(&output_path).expect("Failed to create output file");
                 output_file.write_all(&entry.data).expect("Failed to write to output file");
             }
         }
         "-i" => {
-            let entries = fs::read_dir(path).expect("Failed to open directory");
-            repack(entries, path.file_stem().unwrap().to_str().unwrap());
+            let mut existing_file = File::open(path).expect("Failed to open the existing file");
+            let mut existing_data = Vec::new();
+            existing_file.read_to_end(&mut existing_data).expect("Failed to read the existing file");
+
+            let entries = read_dir(path.parent().expect("Invalid path")).expect("Failed to read directory");
+
+            let output_path = path.join(".modded");
+            let mut output_file = File::create(&output_path).expect("Failed to create output file");
+            output_file.write_all(&existing_data).expect("Failed to write to output file");
+            repack(output_file, entries);
         }
         _ => {
             eprintln!("Unknown mode: {}", mode);

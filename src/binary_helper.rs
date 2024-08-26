@@ -1,10 +1,16 @@
-use std::io::Read;
+use std::{io::Read, u32};
 
 // Unsigned types
 pub fn read_byte<R: Read>(reader: &mut R) -> u8 {
     let mut buffer = [0u8; 1];
     reader.read_exact(&mut buffer).expect("Failed to read byte");
     buffer[0]
+}
+
+pub fn read_bytes<R: Read>(reader: &mut R, n: usize) -> Vec<u8> {
+    let mut buffer = vec![0u8; n];
+    reader.read_exact(&mut buffer).expect("Failed to read bytes");
+    buffer
 }
 
 pub fn read_ushort<R: Read>(reader: &mut R) -> u16 {
@@ -30,6 +36,12 @@ pub fn read_sbyte<R: Read>(reader: &mut R) -> i8 {
     let mut buffer = [0u8; 1];
     reader.read_exact(&mut buffer).expect("Failed to read sbyte");
     buffer[0] as i8
+}
+
+pub fn read_sbytes<R: Read>(reader: &mut R, n: usize) -> Vec<i8> {
+    let mut buffer = vec![0u8; n];
+    reader.read_exact(&mut buffer).expect("Failed to read bytes");
+    buffer.into_iter().map(|byte| byte as i8).collect()
 }
 
 pub fn read_short<R: Read>(reader: &mut R) -> i16 {
